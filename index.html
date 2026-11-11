@@ -203,7 +203,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--ac)}
 <div class="xt"><div class="card"><h4>تبليغ جديد</h4><input id="xat" placeholder="العنوان"><textarea id="xab" style="direction:rtl;font-family:inherit;font-size:14px;min-height:90px" placeholder="نص التبليغ"></textarea><button class="btn" onclick="addAn()">نشر</button></div><div id="xal"></div></div>
 <div class="xt" hidden><div class="card"><h4>إضافة محاضرة</h4><select id="xlty" onchange="fillSub()"><option>نظري</option><option>عملي</option></select><select id="xls"></select><input id="xlt" placeholder="عنوان المحاضرة"><input id="xlf" type="file"><input id="xlu" placeholder="أو الصق رابط (https://...)" dir="ltr"><button class="btn" id="xlb" onclick="addLe()">رفع ونشر</button></div><div id="xll"></div></div>
 <div class="xt" hidden><div class="card"><h4>تعديل الجدول</h4><div class="tabs" id="xst"></div><div id="xsc"></div><button class="btn" onclick="saveSch()">💾 حفظ ونشر للطلاب</button> <button class="btn g" onclick="resetSch()">رجوع للأصلي</button></div></div>
-<div class="xt" hidden><div class="card"><h4>إضافة تدريسي</h4><small>ينشئ له حساب (ايميل + رمز) ويدخل فقط لموادّه</small><input id="xtn" placeholder="اسم التدريسي"><input id="xte" type="email" dir="ltr" placeholder="الايميل"><input id="xtp" dir="ltr" placeholder="الرمز (6 أحرف أو أكثر)"><div id="xts"></div><button class="btn" onclick="addT()">إضافة</button></div><div class="card"><h4>إضافة جماعية</h4><small>كل سطر: الاسم, الايميل, الرمز, المواد (مفصولة بـ +)</small><textarea id="xtb" dir="ltr" style="min-height:150px" placeholder="الاسم, email, password, his+bio"></textarea><button class="btn" onclick="addBulk()">إضافة الكل</button></div><div id="xtl"></div></div>
+<div class="xt" hidden><div class="card"><h4>إضافة تدريسي</h4><small>ينشئ له حساب (ايميل + رمز) ويدخل فقط للمادة والنوع (نظري/عملي) اللي تحدده له. للتعديل اضغط ✏️ جنب اسمه.</small><input id="xtn" placeholder="اسم التدريسي"><input id="xte" type="email" dir="ltr" placeholder="الايميل"><input id="xtp" dir="ltr" placeholder="الرمز (6 أحرف أو أكثر)"><div id="xts"></div><button class="btn" id="xtbtn" onclick="addT()">إضافة</button></div><div class="card"><h4>إضافة جماعية</h4><small>كل سطر: الاسم, الايميل, الرمز, المواد (مفصولة بـ +) — his:t = نظري فقط، his:p = عملي فقط، his = الاثنين</small><textarea id="xtb" dir="ltr" style="min-height:150px" placeholder="الاسم, email, password, his:t+bio:p"></textarea><button class="btn" onclick="addBulk()">إضافة الكل</button></div><div id="xtl"></div></div>
 <div class="xt" hidden><div id="xql"></div></div>
 </div></div></section>
 <section class="scr" id="uq"><div class="hd"><button class="bk" onclick="show('w')">→</button><div><h2>❓ اسأل</h2><small>اكتب سؤالك والتدريسي يجاوبك</small></div></div><div class="bd"><div class="card"><h4>اكتب سؤالك</h4><select id="uqs"></select><input id="uqn" placeholder="اسمك (اختياري)" maxlength="60"><textarea id="uqb" maxlength="1000" style="direction:rtl;font-family:inherit;font-size:14px;min-height:90px" placeholder="اكتب سؤالك هنا..."></textarea><button class="btn" onclick="sendUQ()">إرسال</button></div><div class="ttl">✅ أسئلة تم الرد عليها</div><div id="uqa"></div></div></section>
@@ -362,9 +362,14 @@ function rFiles(){
 }
 /* ===== إشراف ===== */
 var ME=null,TL=[],WK=null,WS=0,GP=["","A1","A2","A3","A4","B1","B2","B3","B4"];
-function allow(k){return !!ME&&(ME.role=="admin"||(ME.subjects||[]).indexOf(k)>=0)}
+/* الصلاحيات: "k" = نظري+عملي ، "k:t" = نظري فقط ، "k:p" = عملي فقط */
+function pc(x){var a=String(x).split(":");return[a[0],a[1]||""]}
+function allow(k,ty){if(!ME)return false;if(ME.role=="admin")return true;var c=ty=="نظري"?"t":ty=="عملي"?"p":"";return(ME.subjects||[]).some(function(x){var p=pc(x);return p[0]==k&&(!c||!p[1]||p[1]==c)})}
+function pl(x){var p=pc(x);return sn(p[0])+(p[1]=="t"?" (نظري فقط)":p[1]=="p"?" (عملي فقط)":NOPR[p[0]]?" (نظري)":" (نظري + عملي)")}
+function norm(a){var m={};a.forEach(function(x){var p=pc(x),k=p[0];if(!SJ[k])return;var o=m[k]=m[k]||{};if(!p[1]){o.t=1;if(!NOPR[k])o.p=1}else if(p[1]=="t"||(p[1]=="p"&&!NOPR[k]))o[p[1]]=1});var r=[];Object.keys(m).forEach(function(k){var o=m[k];if(o.t&&o.p)r.push(k);else if(o.t)r.push(k+":t");else if(o.p)r.push(k+":p")});return r}
+function fillTy(){var o=$("xlty"),v=o.value;o.innerHTML=["نظري","عملي"].filter(function(t){return sk(t).some(function(k){return allow(k,t)})}).map(function(t){return"<option>"+t+"</option>"}).join("");if(v&&[].slice.call(o.options).some(function(x){return x.value==v}))o.value=v}
 function sn(k){return k=="gen"?"عام":SJ[k]?SJ[k][1]:k}
-function fillSub(){var o=$("xls"),v=o.value;o.innerHTML=sk($("xlty").value).filter(allow).map(function(k){return '<option value="'+esc(k)+'">'+esc(SJ[k][1])+'</option>'}).join("");if(v&&o.querySelector('[value="'+v+'"]'))o.value=v}
+function fillSub(){var o=$("xls"),v=o.value;o.innerHTML=sk($("xlty").value).filter(function(k){return allow(k,$("xlty").value)}).map(function(k){return '<option value="'+esc(k)+'">'+esc(SJ[k][1])+'</option>'}).join("");if(v&&o.querySelector('[value="'+v+'"]'))o.value=v}
 var KIND="admin";
 async function openAdm(k){
   if(k){KIND=k;$("xlm").textContent=""}var ad0=KIND=="admin";
@@ -381,7 +386,7 @@ async function openAdm(k){
     await load();var ad=ME.role=="admin";
     $("xh2").textContent=ad?"🛡️ لوحة المشرف":"👨‍🏫 لوحة التدريسي";$("xh3").textContent=ME.name||ME.email;$("xwho").textContent="👤 "+(ME.name||ME.email)+" · "+(ad?"مشرف":"تدريسي");
     document.querySelectorAll("[data-a]").forEach(function(e){e.hidden=!ad});
-    WK=null;fillSub();fillT();if(ad){sch(WS);lt()}tab(ad?0:1);
+    WK=null;fillTy();fillSub();fillT();if(ad){sch(WS);lt()}tab(ad?0:1);
   }
   show("m");$("xlg").hidden=ADM;$("xpn").hidden=!ADM;if(ADM)rAdm();
 }
@@ -395,7 +400,7 @@ function tab(i){document.querySelectorAll(".xt").forEach(function(e,j){e.hidden=
 function rAdm(){
   if(!ME)return;
   if(ME.role=="admin")$("xal").innerHTML=AN.map(function(x){return '<div class="card fl"><div><h4>'+esc(x.title)+'</h4><small>'+fd(x.created_at)+'</small></div><button class="btn r" onclick="del(\'announcements\','+x.id+')">حذف</button></div>'}).join("");
-  $("xll").innerHTML=LE.filter(function(x){return allow(x.subject)}).map(function(x){return '<div class="card fl"><div><h4>'+esc(x.title)+'</h4><small>'+esc(sn(x.subject))+' · '+esc(x.type)+'</small></div><button class="btn r" onclick="del(\'lectures\','+x.id+')">حذف</button></div>'}).join("");
+  $("xll").innerHTML=LE.filter(function(x){return allow(x.subject,x.type)}).map(function(x){return '<div class="card fl"><div><h4>'+esc(x.title)+'</h4><small>'+esc(sn(x.subject))+' · '+esc(x.type)+'</small></div><button class="btn r" onclick="del(\'lectures\','+x.id+')">حذف</button></div>'}).join("");
   rQs();
 }
 function rQs(){
@@ -420,7 +425,7 @@ async function addAn(){
 }
 async function addLe(){
   var t=$("xlt").value.trim(),f=$("xlf").files[0],u=$("xlu").value.trim(),p=null,b=$("xlb");
-  if(!$("xls").value)return alert("ماكو مادة مسموحة لك");
+  if(!$("xls").value||!allow($("xls").value,$("xlty").value))return alert("ماكو مادة مسموحة لك");
   if(!t||(!f&&!/^https?:\/\//.test(u)))return alert("اكتب العنوان وارفع ملف أو حط رابط يبدأ بـ https");
   b.disabled=true;b.textContent="جاري الرفع...";
   try{
@@ -431,9 +436,10 @@ async function addLe(){
   b.disabled=false;b.textContent="رفع ونشر";
 }
 /* المدرسين */
-function fillT(){$("xts").innerHTML=Object.keys(SJ).map(function(k){return '<label style="display:block;margin:4px 0"><input type="checkbox" style="width:auto;margin:0 0 0 6px" value="'+esc(k)+'">'+SJ[k][0]+' '+esc(SJ[k][1])+'</label>'}).join("")}
+function fillT(){$("xts").innerHTML=Object.keys(SJ).map(function(k){return '<div style="margin:6px 0;padding:8px 10px;border:1px solid var(--bd);border-radius:12px"><b>'+SJ[k][0]+' '+esc(SJ[k][1])+'</b><br><label style="margin-left:16px"><input type="checkbox" style="width:auto;margin:0 0 0 6px" value="'+esc(k)+':t">📘 نظري</label>'+(NOPR[k]?'':'<label><input type="checkbox" style="width:auto;margin:0 0 0 6px" value="'+esc(k)+':p">🧫 عملي</label>')+'</div>'}).join("")}
 async function lt(){var q=await sb.from("admins").select("*").eq("role","teacher").order("name");TL=q.data||[];rT()}
-function rT(){$("xtl").innerHTML=TL.map(function(t,i){return '<div class="card fl"><div><h4>'+esc(t.name||t.email)+'</h4><small dir="ltr">'+esc(t.email)+'</small><br><small>'+(t.subjects||[]).map(sn).join("، ")+'</small></div><button class="btn r" onclick="delT('+i+')">حذف</button></div>'}).join("")||"ماكو مدرسين بعد"}
+function rT(){$("xtl").innerHTML=TL.map(function(t,i){return '<div class="card fl"><div><h4>'+esc(t.name||t.email)+'</h4><small dir="ltr">'+esc(t.email)+'</small><br><small>'+(t.subjects||[]).map(pl).join("، ")+'</small></div><div style="display:flex;gap:6px"><button class="btn" onclick="eT('+i+')">✏️</button><button class="btn r" onclick="delT('+i+')">حذف</button></div></div>'}).join("")||"ماكو مدرسين بعد"}
+function eT(i){var t=TL[i];$("xtn").value=t.name||"";$("xte").value=t.email;$("xtp").value="";fillT();(t.subjects||[]).forEach(function(x){var p=pc(x);["t","p"].forEach(function(c){if(!p[1]||p[1]==c){var e=document.querySelector('#xts input[value="'+p[0]+":"+c+'"]');if(e)e.checked=true}})});$("xtbtn").textContent="حفظ التعديل";$("xtn").scrollIntoView({behavior:"smooth"})}
 async function mkT(n,e,p,s){
   var c2=supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storage:{getItem:function(){return null},setItem:function(){},removeItem:function(){}}}});
   var r=await c2.auth.signUp({email:e,password:p});
@@ -443,15 +449,18 @@ async function mkT(n,e,p,s){
   return r.data&&r.data.session?"✅ "+n:"⚠️ "+n+" (انضاف بس لازم يتفعّل: عطّل Confirm email)";
 }
 async function addT(){
-  var n=$("xtn").value.trim(),e=$("xte").value.trim().toLowerCase(),p=$("xtp").value,s=[].slice.call(document.querySelectorAll("#xts input:checked")).map(function(i){return i.value});
-  if(!n||!e||p.length<6||!s.length)return alert("اكمل الاسم والايميل والرمز (6 أحرف أو أكثر) واختار مادة وحدة على الأقل");
+  var n=$("xtn").value.trim(),e=$("xte").value.trim().toLowerCase(),p=$("xtp").value,s=norm([].slice.call(document.querySelectorAll("#xts input:checked")).map(function(i){return i.value})),ex=TL.filter(function(x){return x.email.toLowerCase()==e})[0];
+  if(!n||!e||!s.length||(!ex&&p.length<6))return alert("اكمل الاسم والايميل والرمز (6 أحرف أو أكثر) واختار مادة وحدة على الأقل (نظري و/أو عملي)");
   if(e==ME.email.toLowerCase())return alert("هذا ايميلك أنت");
-  var m=await mkT(n,e,p,s);$("xtn").value=$("xte").value=$("xtp").value="";fillT();lt();alert(m);
+  var m;
+  if(ex){var w=await sb.from("admins").upsert({email:e,name:n,role:"teacher",subjects:s});m=w.error?"❌ "+w.error.message:"✅ تم تحديث صلاحيات "+n}
+  else m=await mkT(n,e,p,s);
+  $("xtn").value=$("xte").value=$("xtp").value="";$("xtbtn").textContent="إضافة";fillT();lt();alert(m);
 }
 async function addBulk(){
   var L=$("xtb").value.split("\n").map(function(x){return x.trim()}).filter(Boolean),out=[];
   for(var i=0;i<L.length;i++){
-    var p=L[i].split(",").map(function(x){return x.trim()}),s=(p[3]||"").split("+").filter(function(k){return SJ[k]});
+    var p=L[i].split(",").map(function(x){return x.trim()}),s=norm((p[3]||"").split("+").map(function(x){return x.trim()}));
     if(p.length<4||p[2].length<6||!s.length||p[1].toLowerCase()==ME.email.toLowerCase()){out.push("❌ سطر "+(i+1)+" ناقص أو غلط");continue}
     out.push(await mkT(p[0],p[1].toLowerCase(),p[2],s));
   }
