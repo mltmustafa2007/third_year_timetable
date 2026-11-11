@@ -187,7 +187,7 @@ textarea{min-height:260px;direction:ltr;font-family:monospace;font-size:11px}
 <div class="xt"><div class="card"><h4>تبليغ جديد</h4><input id="xat" placeholder="العنوان"><textarea id="xab" style="direction:rtl;font-family:inherit;font-size:14px;min-height:90px" placeholder="نص التبليغ"></textarea><button class="btn" onclick="addAn()">نشر</button></div><div id="xal"></div></div>
 <div class="xt" hidden><div class="card"><h4>إضافة محاضرة</h4><select id="xlty" onchange="fillSub()"><option>نظري</option><option>عملي</option></select><select id="xls"></select><input id="xlt" placeholder="عنوان المحاضرة"><input id="xlf" type="file"><input id="xlu" placeholder="أو الصق رابط (https://...)" dir="ltr"><button class="btn" id="xlb" onclick="addLe()">رفع ونشر</button></div><div id="xll"></div></div>
 <div class="xt" hidden><div class="card"><h4>تعديل الجدول</h4><div class="tabs" id="xst"></div><div id="xsc"></div><button class="btn" onclick="saveSch()">💾 حفظ ونشر للطلاب</button> <button class="btn g" onclick="resetSch()">رجوع للأصلي</button></div></div>
-<div class="xt" hidden><div class="card"><h4>إضافة تدريسي</h4><small>ينشئ له حساب (ايميل + رمز) ويدخل فقط لموادّه</small><input id="xtn" placeholder="اسم التدريسي"><input id="xte" type="email" dir="ltr" placeholder="الايميل"><input id="xtp" dir="ltr" placeholder="الرمز (6 أحرف أو أكثر)"><div id="xts"></div><button class="btn" onclick="addT()">إضافة</button></div><div id="xtl"></div></div>
+<div class="xt" hidden><div class="card"><h4>إضافة تدريسي</h4><small>ينشئ له حساب (ايميل + رمز) ويدخل فقط لموادّه</small><input id="xtn" placeholder="اسم التدريسي"><input id="xte" type="email" dir="ltr" placeholder="الايميل"><input id="xtp" dir="ltr" placeholder="الرمز (6 أحرف أو أكثر)"><div id="xts"></div><button class="btn" onclick="addT()">إضافة</button></div><div class="card"><h4>إضافة جماعية</h4><small>كل سطر: الاسم, الايميل, الرمز, المواد (مفصولة بـ +)</small><textarea id="xtb" dir="ltr" style="min-height:150px" placeholder="الاسم, email, password, his+bio"></textarea><button class="btn" onclick="addBulk()">إضافة الكل</button></div><div id="xtl"></div></div>
 <div class="xt" hidden><div id="xql"></div></div>
 </div></div></section>
 <section class="scr" id="uq"><div class="hd"><button class="bk" onclick="show('w')">→</button><div><h2>❓ اسأل</h2><small>اكتب سؤالك والتدريسي يجاوبك</small></div></div><div class="bd"><div class="card"><h4>اكتب سؤالك</h4><select id="uqs"></select><input id="uqn" placeholder="اسمك (اختياري)" maxlength="60"><textarea id="uqb" maxlength="1000" style="direction:rtl;font-family:inherit;font-size:14px;min-height:90px" placeholder="اكتب سؤالك هنا..."></textarea><button class="btn" onclick="sendUQ()">إرسال</button></div><div class="ttl">✅ أسئلة تم الرد عليها</div><div id="uqa"></div></div></section>
@@ -414,17 +414,28 @@ async function addLe(){
 function fillT(){$("xts").innerHTML=Object.keys(SJ).map(function(k){return '<label style="display:block;margin:4px 0"><input type="checkbox" style="width:auto;margin:0 0 0 6px" value="'+esc(k)+'">'+SJ[k][0]+' '+esc(SJ[k][1])+'</label>'}).join("")}
 async function lt(){var q=await sb.from("admins").select("*").eq("role","teacher").order("name");TL=q.data||[];rT()}
 function rT(){$("xtl").innerHTML=TL.map(function(t,i){return '<div class="card fl"><div><h4>'+esc(t.name||t.email)+'</h4><small dir="ltr">'+esc(t.email)+'</small><br><small>'+(t.subjects||[]).map(sn).join("، ")+'</small></div><button class="btn r" onclick="delT('+i+')">حذف</button></div>'}).join("")||"ماكو مدرسين بعد"}
+async function mkT(n,e,p,s){
+  var c2=supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storage:{getItem:function(){return null},setItem:function(){},removeItem:function(){}}}});
+  var r=await c2.auth.signUp({email:e,password:p});
+  if(r.error&&!/registered|exists/i.test(r.error.message))return "❌ "+n+": "+r.error.message;
+  var w=await sb.from("admins").upsert({email:e,name:n,role:"teacher",subjects:s});
+  if(w.error)return "❌ "+n+": "+w.error.message;
+  return r.data&&r.data.session?"✅ "+n:"⚠️ "+n+" (انضاف بس لازم يتفعّل: عطّل Confirm email)";
+}
 async function addT(){
   var n=$("xtn").value.trim(),e=$("xte").value.trim().toLowerCase(),p=$("xtp").value,s=[].slice.call(document.querySelectorAll("#xts input:checked")).map(function(i){return i.value});
   if(!n||!e||p.length<6||!s.length)return alert("اكمل الاسم والايميل والرمز (6 أحرف أو أكثر) واختار مادة وحدة على الأقل");
   if(e==ME.email.toLowerCase())return alert("هذا ايميلك أنت");
-  var c2=supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storage:{getItem:function(){return null},setItem:function(){},removeItem:function(){}}}});
-  var r=await c2.auth.signUp({email:e,password:p});
-  if(r.error&&!/registered|exists/i.test(r.error.message))return alert(r.error.message);
-  var w=await sb.from("admins").upsert({email:e,name:n,role:"teacher",subjects:s});
-  if(w.error)return alert(w.error.message);
-  $("xtn").value=$("xte").value=$("xtp").value="";fillT();lt();
-  alert(r.data&&r.data.session?"✅ انضاف التدريسي، يكدر يدخل هسه":"انضاف. إذا ما كدر يدخل: Supabase ← Authentication ← Sign In / Providers ← Email ← عطّل Confirm email");
+  var m=await mkT(n,e,p,s);$("xtn").value=$("xte").value=$("xtp").value="";fillT();lt();alert(m);
+}
+async function addBulk(){
+  var L=$("xtb").value.split("\n").map(function(x){return x.trim()}).filter(Boolean),out=[];
+  for(var i=0;i<L.length;i++){
+    var p=L[i].split(",").map(function(x){return x.trim()}),s=(p[3]||"").split("+").filter(function(k){return SJ[k]});
+    if(p.length<4||p[2].length<6||!s.length||p[1].toLowerCase()==ME.email.toLowerCase()){out.push("❌ سطر "+(i+1)+" ناقص أو غلط");continue}
+    out.push(await mkT(p[0],p[1].toLowerCase(),p[2],s));
+  }
+  $("xtb").value="";lt();alert(out.join("\n"));
 }
 async function delT(i){if(!confirm("تحذف هذا التدريسي؟"))return;await sb.from("admins").delete().eq("email",TL[i].email);lt()}
 /* تعديل الجدول */
