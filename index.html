@@ -123,6 +123,21 @@ textarea{min-height:260px;direction:ltr;font-family:monospace;font-size:11px}
 .btn.r{background:#dc2626}.btn.g{background:var(--mu)}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.tabs .btn{flex:1 1 28%;padding:10px 4px;font-size:12px}
 .pv{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}.pvh{display:flex;align-items:center;gap:6px;padding:10px;border-bottom:1px solid var(--bd)}.pvh b{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#pvb{flex:1;overflow:auto}#pvb iframe{width:100%;height:100%;border:0}
+/* polish */
+.hm{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin-top:18px}
+.hm button{background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);border-radius:20px;padding:14px 4px;font-size:13px;font-weight:700;transition:.15s}
+.hm button:active{transform:scale(.96)}
+.hm b{font-size:26px;margin-bottom:4px}
+.lg2{display:flex;gap:8px;width:100%;max-width:340px;margin-top:12px}
+.lg2 button{flex:1;background:transparent;border:1px dashed rgba(255,255,255,.45);color:#fff;border-radius:14px;padding:10px 4px;font:inherit;font-size:12px;cursor:pointer}
+.card{border-radius:20px;padding:16px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac)}
+.tabs{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:6px;box-shadow:var(--sh)}
+.tabs .btn{border-radius:13px}
+.btn{transition:.15s}.btn:active{transform:scale(.97)}
+#xwho{display:block;margin:0 4px 10px;color:var(--mu)}
+.em{text-align:center;color:var(--mu);padding:34px 10px}.em big{display:block;font-size:44px;margin-bottom:6px}
+.fi{font-size:30px;line-height:1;flex:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 </head>
@@ -154,7 +169,8 @@ textarea{min-height:260px;direction:ltr;font-family:monospace;font-size:11px}
   <div class="tn" id="tn"></div>
   <div class="qt" id="q1"></div>
   <button class="go" onclick="show('g')">ابدأ الآن ←</button>
-  <div class="hm"><button onclick="openAn()"><b>📢</b>التبليغات<span class="bdg" id="bg" hidden></span></button><button onclick="rSub();show('dl')"><b>📥</b>المحاضرات</button><button onclick="openUQ()"><b>❓</b>اسأل</button><button onclick="openAdm()"><b>🛡️</b>إشراف</button></div>
+  <div class="hm"><button onclick="openAn()"><b>📢</b>التبليغات<span class="bdg" id="bg" hidden></span></button><button onclick="rSub();show('dl')"><b>📥</b>المحاضرات</button><button onclick="openUQ()"><b>❓</b>اسأل</button></div>
+  <div class="lg2"><button onclick="openAdm('admin')">🛡️ دخول المشرف</button><button onclick="openAdm('teacher')">👨‍🏫 دخول التدريسي</button></div>
 </section>
 
 <section class="scr" id="g">
@@ -179,8 +195,8 @@ textarea{min-height:260px;direction:ltr;font-family:monospace;font-size:11px}
 <section class="scr" id="a"><div class="hd"><button class="bk" onclick="show('w')">→</button><div><h2>📢 التبليغات</h2><small>آخر الأخبار والتنبيهات</small></div></div><div class="bd" id="ao"></div></section>
 <section class="scr" id="dl"><div class="hd"><button class="bk" onclick="show('w')">→</button><div><h2>📥 تنزيل المحاضرات</h2><small>اختار المادة</small></div></div><div class="bd" id="dlo"></div></section>
 <section class="scr" id="f"><div class="hd"><button class="bk" onclick="show('dl')">→</button><div><h2 id="ft"></h2><small>ملفات المادة</small></div></div><div class="bd" id="fo"></div></section>
-<section class="scr" id="m"><div class="hd"><button class="bk" onclick="show('w')">→</button><div><h2>🛡️ الإشراف</h2><small>لوحة التحكم</small></div></div><div class="bd">
-<div id="xlg" class="card"><h4>🔐 دخول المشرف</h4><input id="xae" type="email" placeholder="الايميل" dir="ltr" autocomplete="username"><input id="xap" type="password" placeholder="الرمز" dir="ltr" autocomplete="current-password"><button class="btn" onclick="login()">دخول</button><p id="xlm"></p></div>
+<section class="scr" id="m"><div class="hd"><button class="bk" onclick="show('w')">→</button><div><h2 id="xh2">🛡️ دخول المشرف</h2><small id="xh3">لوحة التحكم</small></div></div><div class="bd">
+<div id="xlg" class="card"><h4 id="xlh">🔐 دخول المشرف</h4><input id="xae" type="email" placeholder="الايميل" dir="ltr" autocomplete="username"><input id="xap" type="password" placeholder="الرمز" dir="ltr" autocomplete="current-password"><button class="btn" onclick="login()">دخول</button><p id="xlm"></p></div>
 <div id="xpn" hidden>
 <div class="tabs"><button class="btn" data-a onclick="tab(0)">📢 تبليغات</button><button class="btn" onclick="tab(1)">📥 محاضرات</button><button class="btn" data-a onclick="tab(2)">🗓 الجدول</button><button class="btn" data-a onclick="tab(3)">👨‍🏫 المدرسين</button><button class="btn" onclick="tab(4)">❓ الأسئلة</button><button class="btn r" onclick="logout()">خروج</button></div>
 <small id="xwho"></small>
@@ -342,24 +358,28 @@ function oF(k){CS=k;rFiles();show("f")}
 function rFiles(){
   if(!SJ[CS])return;$("ft").textContent=SJ[CS][0]+" "+SJ[CS][1]+" · "+CT;
   var L=LE.filter(function(x){return x.subject==CS&&x.type==CT});
-  $("fo").innerHTML=L.length?L.map(function(x){return '<div class="card fl"><div><h4>'+esc(x.title)+'</h4><small>'+fd(x.created_at)+'</small></div><div style="display:flex;gap:6px"><button class="btn g" onclick="pvw('+x.id+')">👁</button><button class="btn" onclick="dlf('+x.id+')">⬇ تنزيل</button></div></div>'}).join(""):'<div class="em"><big>📂</big>ماكو ملفات '+CT+' بعد</div>';
+  $("fo").innerHTML=L.length?L.map(function(x){return '<div class="card fl"><div style="display:flex;gap:10px;align-items:center;min-width:0"><span class="fi">'+fi(x)+'</span><div><h4>'+esc(x.title)+'</h4><small>'+fd(x.created_at)+'</small></div></div><div style="display:flex;gap:6px"><button class="btn g" onclick="pvw('+x.id+')">👁</button><button class="btn" onclick="dlf('+x.id+',this)">⬇ تنزيل</button></div></div>'}).join(""):'<div class="em"><big>📂</big>ماكو ملفات '+CT+' بعد</div>';
 }
 /* ===== إشراف ===== */
 var ME=null,TL=[],WK=null,WS=0,GP=["","A1","A2","A3","A4","B1","B2","B3","B4"];
 function allow(k){return !!ME&&(ME.role=="admin"||(ME.subjects||[]).indexOf(k)>=0)}
 function sn(k){return k=="gen"?"عام":SJ[k]?SJ[k][1]:k}
 function fillSub(){var o=$("xls"),v=o.value;o.innerHTML=sk($("xlty").value).filter(allow).map(function(k){return '<option value="'+esc(k)+'">'+esc(SJ[k][1])+'</option>'}).join("");if(v&&o.querySelector('[value="'+v+'"]'))o.value=v}
-async function openAdm(){
+var KIND="admin";
+async function openAdm(k){
+  if(k){KIND=k;$("xlm").textContent=""}var ad0=KIND=="admin";
+  $("xh2").textContent=ad0?"🛡️ دخول المشرف":"👨‍🏫 دخول التدريسي";$("xh3").textContent=ad0?"لوحة التحكم الكاملة":"رفع المحاضرات والرد على الأسئلة";$("xlh").textContent=ad0?"🔐 دخول المشرف":"🔐 دخول التدريسي";
   if(!sb){alert("اربط Supabase أول: عدّل SUPA_URL و SUPA_KEY داخل index.html");return}
   var s=(await sb.auth.getSession()).data.session;ME=null;ADM=false;
   if(s){
     var q=await sb.from("admins").select("*"),em=(s.user.email||"").toLowerCase();
     ME=(q.data||[]).filter(function(r){return r.email.toLowerCase()==em})[0]||null;ADM=!!ME;
-    if(!ME){await sb.auth.signOut();$("xlm").textContent="⛔ هذا الحساب ما عنده صلاحية"}
+    if(ME&&ME.role!=(KIND=="admin"?"admin":"teacher")){$("xlm").textContent=ME.role=="admin"?"⛔ هذا حساب مشرف، ادخل من «دخول المشرف»":"⛔ هذا حساب تدريسي، ادخل من «دخول التدريسي»";ME=null;ADM=false;await sb.auth.signOut()}
+    else if(!ME){await sb.auth.signOut();$("xlm").textContent="⛔ هذا الحساب ما عنده صلاحية"}
   }
   if(ADM){
     await load();var ad=ME.role=="admin";
-    $("xwho").textContent="👤 "+(ME.name||ME.email)+" · "+(ad?"مشرف":"تدريسي");
+    $("xh2").textContent=ad?"🛡️ لوحة المشرف":"👨‍🏫 لوحة التدريسي";$("xh3").textContent=ME.name||ME.email;$("xwho").textContent="👤 "+(ME.name||ME.email)+" · "+(ad?"مشرف":"تدريسي");
     document.querySelectorAll("[data-a]").forEach(function(e){e.hidden=!ad});
     WK=null;fillSub();fillT();if(ad){sch(WS);lt()}tab(ad?0:1);
   }
@@ -477,15 +497,25 @@ async function resetSch(){
   await sb.from("settings").delete().eq("key","schedule");WK=null;await load();sch();
 }
 /* تنزيل ومعاينة */
+function fi(x){var e=(x.file_path||x.file_url.split("?")[0]).split(".").pop().toLowerCase();return /pdf/.test(e)?"📕":/pptx?/.test(e)?"📊":/docx?/.test(e)?"📝":/xlsx?|csv/.test(e)?"📗":/png|jpe?g|webp|gif/.test(e)?"🖼️":/mp4|mov|webm/.test(e)?"🎬":"📄"}
 function gx(id){return LE.filter(function(e){return e.id==id})[0]}
 function fu(x,d){var u=x.file_url;if(d&&u.indexOf("/storage/v1/object/public/")>0){var e=(x.file_path||"").split(".").pop();u+="?download="+encodeURIComponent(x.title+(x.file_path&&e!=x.file_path?"."+e:""))}return u}
-function dlf(id){var x=gx(id);if(!x)return;var a=document.createElement("a");a.href=fu(x,1);a.rel="noopener";a.download=x.title;document.body.appendChild(a);a.click();a.remove()}
+async function dlf(id,b){
+  var x=gx(id);if(!x)return;var u=x.file_url,e=(x.file_path||u.split("?")[0]).split(".").pop(),nm=x.title.replace(/[\\\/:*?"<>|]/g,"-")+(/^[a-z0-9]{2,5}$/i.test(e)?"."+e:""),t0=b?b.textContent:"";
+  if(b){b.disabled=true;b.textContent="⏳ جاري التحضير..."}
+  try{
+    var r=await fetch(u);if(!r.ok)throw 0;var bl=await r.blob(),f=new File([bl],nm,{type:bl.type||"application/octet-stream"}),ua=navigator.userAgent,app=/; wv\)|FBAN|FBAV|Instagram|Telegram|Line\//i.test(ua)||(/iPhone|iPad/.test(ua)&&!/Safari\//.test(ua));
+    if(app&&navigator.canShare&&navigator.canShare({files:[f]})&&b){b.disabled=false;b.textContent="💾 اضغط للحفظ";b.onclick=function(){navigator.share({files:[f]}).catch(function(){})};return}
+    var url=URL.createObjectURL(bl),a=document.createElement("a");a.href=url;a.download=nm;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},60000);
+    if(b){b.disabled=false;b.textContent=t0}
+  }catch(err){if(b){b.disabled=false;b.textContent=t0}location.href=fu(x,1)}
+}
 function pvw(id){
   var x=gx(id);if(!x)return;var u=x.file_url,e=u.split("?")[0].split(".").pop().toLowerCase(),h;
   if(/^(png|jpe?g|gif|webp)$/.test(e))h='<img src="'+esc(u)+'" style="max-width:100%;display:block;margin:auto">';
   else if(/^(mp4|webm|mov)$/.test(e))h='<video src="'+esc(u)+'" controls playsinline style="width:100%"></video>';
   else h='<iframe src="https://docs.google.com/gview?embedded=1&url='+encodeURIComponent(u)+'"></iframe>';
-  $("pvt").textContent=x.title;$("pvb").innerHTML=h;$("pvo").href=u;$("pvd").onclick=function(){dlf(id)};$("pv").hidden=false;
+  $("pvt").textContent=x.title;$("pvb").innerHTML=h;$("pvo").href=u;$("pvd").onclick=function(){dlf(id,this)};$("pv").hidden=false;
 }
 function pvx(){$("pv").hidden=true;$("pvb").innerHTML=""}
 /* أسئلة الطلاب */
