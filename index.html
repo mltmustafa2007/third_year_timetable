@@ -367,7 +367,7 @@ async function openAdm(){
 }
 async function login(){
   var r=await sb.auth.signInWithPassword({email:$("xae").value.trim(),password:$("xap").value});
-  if(r.error){$("xlm").textContent="❌ الايميل أو الرمز غلط";return}
+  if(r.error){var m=r.error.message||"";$("xlm").textContent=/not confirmed/i.test(m)?"⚠️ الحساب غير مفعّل: فعّله من Supabase ← Authentication ← Users":/invalid login/i.test(m)?"❌ الايميل أو الرمز غلط":"❌ "+m;return}
   $("xlm").textContent="";$("xap").value="";openAdm();
 }
 async function logout(){await sb.auth.signOut();ADM=false;ME=null;show("w");load()}
